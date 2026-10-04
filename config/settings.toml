@@ -1,0 +1,518 @@
+# =============================================================================
+#  settings.toml  —  the game's ONLY configuration file
+# =============================================================================
+#  Everything here is optional: if you delete a key, the engine falls back to a default.
+#  The one exception: at least one [[tiles]] entry must exist.
+#
+#  Tips:
+#   - Colors are [R, G, B] lists with values from 0 to 255.
+#   - Key names follow pygame: "w", "up", "space", "escape", "f3"...
+#   - To try another configuration without touching this file:
+#         python main.py --config config/other.toml
+#   - The game's name, folders, file names and the plugin format do NOT live here:
+#     they are part of the game itself and are defined in game/constants.py.
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+#  Window
+# -----------------------------------------------------------------------------
+[window]
+width = 960
+height = 640
+fps = 30
+fullscreen = false
+resizable = true
+background_color = [20, 20, 28]
+
+
+# -----------------------------------------------------------------------------
+#  World (grid size). seed = -1 generates a new random world on every run.
+# -----------------------------------------------------------------------------
+[world]
+width = 128            # in tiles
+height = 128           # in tiles
+tile_size = 32        # pixels per tile
+seed = -1
+day_duration = 900.0   # seconds in a full day (drives the day/night cycle and the clock)
+
+
+# -----------------------------------------------------------------------------
+#  World generation (order: base -> blobs -> shore -> scatter -> border
+#  -> spawn clearing -> guaranteed spawn blocks)
+# -----------------------------------------------------------------------------
+[worldgen]
+default_tile = "grass"            # tile that fills the map before anything else
+border_tile = "water"             # "" disables the border
+border_thickness = 1
+spawn_clearing_radius = 2         # -1 disables the clearing
+spawn_clearing_tile = "grass"
+
+# Circular blobs (lakes, stone veins...). An empty "only_on" means any tile.
+#[[worldgen.blobs]]
+#tile = "dirt"
+#count = 14
+#radius_min = 2
+#radius_max = 4
+#only_on = []
+
+[[worldgen.blobs]]
+tile = "stone"
+count = 16
+radius_min = 2
+radius_max = 5
+only_on = []
+
+[[worldgen.blobs]]
+tile = "water"
+count = 6
+radius_min = 3
+radius_max = 6
+only_on = []
+
+[[worldgen.blobs]]
+tile = "m_coal"
+count = 24
+radius_min = 1
+radius_max = 2
+only_on = ["stone"]
+
+[[worldgen.blobs]]
+tile = "m_iron"
+count = 14
+radius_min = 1
+radius_max = 2
+only_on = ["stone"]
+
+# Shore: replaces "replace" tiles that lie within "radius" tiles of "around".
+[worldgen.shore]
+enabled = true
+tile = "sand"
+around = "water"
+replace = ["grass", "dirt"]
+radius = 1
+
+# Scatter tiles with a given chance (0.0 to 1.0) over certain tiles.
+[[worldgen.scatter]]
+tile = "tree"
+on = ["grass"]
+chance = 0.06
+
+# Guaranteed blocks near the spawn (dx, dy are relative to the map center).
+[[worldgen.spawn_blocks]]
+dx = 2
+dy = 0
+tile = "tree"
+
+[[worldgen.spawn_blocks]]
+dx = -2
+dy = 0
+tile = "stone"
+
+[[worldgen.spawn_blocks]]
+dx = 0
+dy = -2
+tile = "stone"
+
+[[worldgen.spawn_blocks]]
+dx = 0
+dy = 2
+tile = "tree"
+
+
+# -----------------------------------------------------------------------------
+#  Player
+# -----------------------------------------------------------------------------
+[player]
+speed = 150.0                 # pixels per second
+reach_tiles = 3.5             # reach (in tiles) for breaking/placing blocks and attacking
+hitbox_scale = 0.6            # hitbox size relative to a tile
+movement = "four_way"         # "four_way" (Zelda style) or "eight_way" (diagonals)
+start_facing = "down"         # up | down | left | right
+color = [230, 80, 80]         # player color when there is no texture (assets/textures/player/player.png)
+max_health = 20               # starting and maximum health
+
+
+# -----------------------------------------------------------------------------
+#  Game rules
+# -----------------------------------------------------------------------------
+[gameplay]
+max_stack = 99               # maximum size of EACH stack (per slot)
+hotbar_slots = 10            # fixed hotbar/inventory slots (1 to 10; keys 1..9 and 0)
+break_enabled = true
+place_enabled = true
+
+# Starting inventory (uncomment to begin the game with items):
+[gameplay.starting_inventory]
+# stone = 10
+# wood = 10
+
+
+# -----------------------------------------------------------------------------
+#  Controls
+# -----------------------------------------------------------------------------
+[controls]
+up = ["w", "up"]
+down = ["s", "down"]
+left = ["a", "left"]
+right = ["d", "right"]
+quit = ["escape"]
+toggle_debug = ["f3"]         # shows/hides the debug panel
+toggle_crafting = ["c"]
+discard = ["q"]               # deletes 1 unit from the selected slot (nothing is dropped)
+break_button = 1              # 1 = left, 2 = middle, 3 = right (also used to attack)
+place_button = 3
+# Hotbar: keys 1..9 and 0 (10th slot), plus the mouse wheel.
+
+
+# -----------------------------------------------------------------------------
+#  Interface (HUD)
+# -----------------------------------------------------------------------------
+[hud]
+font_file = ""                # file in assets/fonts (empty = default font)
+font_size = 24
+show_score = false
+show_time = false
+show_fps = false
+show_plugins = false
+show_hotbar = true
+show_tile_hint = false         # hint for the block under the mouse
+show_cursor = true
+cursor_width = 2
+max_messages = 5
+default_message_seconds = 3.0
+
+text_color = [255, 255, 255]
+secondary_color = [200, 200, 200]
+message_color = [255, 240, 150]
+cursor_in_reach = [255, 255, 255]
+cursor_out_of_reach = [128, 128, 128]
+
+[hud.hotbar]
+slot_size = 48
+gap = 6
+background_color = [0, 0, 0]
+border_color = [200, 200, 200]
+selected_color = [255, 220, 60]
+
+
+# -----------------------------------------------------------------------------
+#  Audio. Sound effects: assets/audio/sfx/break.wav|ogg and place.wav|ogg.
+#  Music: any .ogg file in assets/audio/music plays in random order, with a
+#  silent gap between tracks. A missing file simply means no sound.
+# -----------------------------------------------------------------------------
+[audio]
+enabled = true
+sfx_volume = 0.6              # 0.0 to 1.0
+music_volume = 0.6            # 0.0 to 1.0
+music_pause_minutes = 5.0     # silence between one track and the next
+
+
+# -----------------------------------------------------------------------------
+#  Plugins (Lua): each plugin is a subfolder of Plugins/ containing meta.txt + main.script
+# -----------------------------------------------------------------------------
+[plugins]
+enabled = true
+disabled = []                 # folder names of plugins that should NOT be loaded
+
+
+# -----------------------------------------------------------------------------
+#  Debug
+# -----------------------------------------------------------------------------
+[debug]
+show_overlay = false          # start with the debug panel visible (F3 toggles it)
+log_clicks = false            # prints every break/place click to the console
+log_events = false            # prints every fired event to the console 
+show_fps = true 
+
+# -----------------------------------------------------------------------------
+#  Multiplayer (AUTHORITATIVE server: python -m game.net.server / Server.bat)
+#  The server decides everything; clients only send requests. Rules such as speed,
+#  reach and hitbox come from the SERVER's settings.toml and are enforced on clients.
+# -----------------------------------------------------------------------------
+[server]
+host = "0.0.0.0"              # address the server listens on
+port = 25565
+tick_rate = 60                # updates per second
+max_players = 16
+connect_timeout = 15.0        # client: maximum time to wait for the world to arrive
+action_cooldown = 0.10        # minimum seconds between a player's break/place actions
+reach_tolerance_tiles = 0.75  # extra reach to compensate for latency
+move_tolerance = 1.25         # multiplier on the maximum accepted speed (network jitter)
+move_burst_seconds = 0.4      # "banked" movement allowed after a lag spike (in seconds of speed)
+
+
+# =============================================================================
+#  TILES. The order defines the internal ID. Fields:
+#    key          unique identifier (also used by plugins and PNG file names)
+#    name         display name
+#    color        fallback color (used when there is no texture)
+#    solid        blocks movement?                 (default: false)
+#    breakable    can be broken?                   (default: false)
+#    resistance   block resistance                 (default: 0)
+#    tool_type    ideal tool type                  (default: "")
+#    break_time   base break time in seconds       (default: 1.0)
+#    drops        item collected when broken       (default: none)
+#    drop_amount  amount collected                 (default: 1)
+#    becomes      tile left behind after breaking  (default: worldgen.default_tile)
+#    texture      PNG in <textures>/tiles          (default: <key>.png)
+#
+#  The world has two layers: NON-breakable tiles (grass, dirt, sand, water...) form the
+#  ground, and breakable tiles (stone, trees, torches, beds...) sit on top of it. Breaking
+#  a block reveals the ground underneath, and transparent blocks show it through.
+# =============================================================================
+[[tiles]]
+key = "grass"
+name = "Grass"
+color = [88, 160, 72]
+
+[[tiles]]
+key = "dirt"
+name = "Dirt"
+color = [134, 96, 67]
+
+[[tiles]]
+key = "sand"
+name = "Sand"
+color = [222, 205, 135]
+
+[[tiles]]
+key = "water"
+name = "Water"
+color = [52, 110, 200]
+solid = true
+
+[[tiles]]
+key = "stone"
+name = "Stone"
+color = [128, 128, 134]
+solid = true
+breakable = true
+resistance = 3
+tool_type = "pickaxe"
+break_time = 1.5
+drops = "stone"
+becomes = "grass"
+
+[[tiles]]
+key = "tree"
+name = "Tree"
+color = [30, 100, 45]
+solid = true
+breakable = true
+resistance = 2
+tool_type = "axe"
+break_time = 1.2
+drops = "wood"
+drop_amount = 1
+becomes = "grass"
+
+[[tiles]]
+key = "wood"
+name = "Wood"
+color = [134, 96, 67]
+solid = true
+breakable = true
+resistance = 2
+tool_type = "axe"
+break_time = 1.0
+drops = "wood"
+drop_amount = 1
+becomes = "grass"
+
+[[tiles]]
+key = "plank"
+name = "Planks"
+color = [176, 128, 70]
+solid = true
+breakable = true
+resistance = 1
+tool_type = "axe"
+break_time = 0.8
+drops = "wood"
+becomes = "grass"
+
+[[tiles]]
+key = "m_coal"
+name = "Coal Ore"
+color = [240, 200, 40]
+solid = true
+breakable = true
+resistance = 3
+tool_type = "pickaxe"
+break_time = 2.0
+drops = "coal"
+drop_amount = 1
+becomes = "grass"
+
+[[tiles]]
+key = "m_iron"
+name = "Iron Ore"
+color = [240, 200, 40]
+solid = true
+breakable = true
+resistance = 4
+tool_type = "pickaxe"
+break_time = 2.5
+drops = "iron"
+drop_amount = 1
+becomes = "grass"
+
+[[tiles]]
+key = "torch"
+name = "Torch"
+solid = true
+breakable = true
+break_time = 0.2
+drop_amount = 1
+drops = "torch"
+becomes = "grass"
+
+[[tiles]]
+key = "bed"
+name = "Bed"
+solid = false
+breakable = true
+resistance = 2
+tool_type = "axe"
+break_time = 1.5
+drop_amount = 1
+drops = "bed"
+becomes = "grass"
+
+# =============================================================================
+#  ITEMS. Every collected item occupies a hotbar slot (see hotbar_slots). Only items
+#  with "places" can be placed in the world; the rest are simply stored.
+#  Icon: assets/textures/items/<key>.png (optional); otherwise the block the item places is used.
+#  Tools: "tool_type" (pickaxe, axe...) and "power". With the right type and
+#  power >= the block's resistance, breaking takes half the time.
+#  Weapons: "damage" (optional) is the damage dealt to enemies. Items without it deal 2.
+# =============================================================================
+[[items]]
+key = "stone"
+name = "Stone"
+places = "stone"
+
+[[items]]
+key = "wood"
+name = "Wood"
+places = "wood"
+
+[[items]]
+key = "coal"
+name = "Coal"
+places = ""
+
+[[items]]
+key = "iron"
+name = "Iron"
+places = ""
+
+[[items]]
+key = "plank"
+name = "Planks"
+places = "plank"
+
+[[items]]
+key = "stick"
+name = "Stick"
+places = ""
+
+[[items]]
+key = "pickaxe"
+name = "Pickaxe"
+tool_type = "pickaxe"
+power = 3
+places = ""
+
+[[items]]
+key = "iron_pickaxe"
+name = "Iron Pickaxe"
+tool_type = "pickaxe"
+power = 5
+places = ""
+
+[[items]]
+key = "sword"
+name = "Sword"
+tool_type = ""
+power = 1
+damage = 5
+places = ""
+
+[[items]]
+key = "axe"
+name = "Axe"
+tool_type = "axe"
+power = 2
+places = ""
+
+[[items]]
+key = "torch"
+name = "Torch"
+places = "torch"
+power = 0
+
+[[items]]
+key = "bed"
+name = "Bed"
+places = "bed"
+power = 0
+
+# =============================================================================
+#  CRAFTING RECIPES
+#  result:      key of the item that is created
+#  count:       how many are created (default: 1)
+#  ingredients: table of item keys and the amounts required
+# =============================================================================
+[[recipes]]
+result = "plank"
+count = 2
+ingredients = { wood = 1 }
+
+[[recipes]]
+result = "stick"
+count = 2
+ingredients = { plank = 1 }
+
+[[recipes]]
+result = "pickaxe"
+count = 1
+ingredients = { stone = 3, stick = 2 }
+
+[[recipes]]
+result = "iron_pickaxe"
+count = 1
+ingredients = { iron = 3, stick = 2 }
+
+[[recipes]]
+result = "sword"
+count = 1
+ingredients = { iron = 2, stick = 1 }
+
+
+[[recipes]]
+result = "axe"
+count = 1
+ingredients = { iron = 3, stick = 3 }
+
+[[recipes]]
+result = "torch"
+count = 4
+ingredients = { coal = 1, stick = 1 }
+
+[[recipes]]
+result = "bed"
+count = 1
+ingredients = { plank = 6, stick = 6 }
+
+# --- Enemies ---
+[enemies.orc]
+name = "Orc"
+max_health = 10
+speed = 80.0
+damage = 2
+detection_radius = 250.0  # chase the player when closer than this (pixels)
+stop_radius = 400.0       # stop chasing once the player is farther than this (pixels)
+spawn_night_only = true
+color = [40, 140, 50]
